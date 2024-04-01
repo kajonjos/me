@@ -1,0 +1,34 @@
+.footer {
+    padding:  20px;
+    background-color: black;
+    display: flex;
+}
+
+.footer img {
+    width: 120px;
+    height:  auto;
+    margin-right: 15px;
+}
+
+.footer a {
+  color: white;
+  font-size: 25px;
+}
+
+.footer a:hover {
+  color: #0CE494;
+}
+
+.list-inline {
+  list-style: none; /* kill the bullet points */
+  padding-left: 10px; /* kill remaining padding left */
+  margin-left: 10px;
+  border-left-style: solid;
+  border-left-color: white;
+  border-left-width: 1.5px;
+}
+.list-inline > li {
+  display: inline; /* change list item behavior to inline */
+  padding: 0px 10px; /* add som left/right padding between list items */
+}
+
