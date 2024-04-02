@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>HEC DataMinds</title>
+		<title>Jan Philipp Girgott Contact</title>
 		<meta name="description" content="Jan Philipp Girgott: Home">
 		<meta charset="utf-8">
 		<link rel="stylesheet" href="css/style.css">
@@ -15,10 +15,10 @@
 		<nav>
 			<div class="nav-content">
 			  <div class="logo">
-				<a href="#">Jan Philipp Girgott</a>
+				<a href="index.html">Jan Philipp Girgott</a>
 			  </div>
 			  <ul class="nav-links">
-				<li><a href="#">Home</a></li>
+				<li><a href="index.html">Home</a></li>
 				<li><a href="cv.pdf">CV</a></li>
 				<li><a href="portfolio.html">Portfolio</a></li>
 				<li><a href="contact.html">Contact</a></li>
@@ -39,78 +39,44 @@
 		
 		<div class="banner">
 			<div class="banner-text">
-				<h1 id="hi"></h1>
-				<h2>I am an aspiring Data Scientist, currently completing his Master of Business Analytics at MIT Sloan. I have a background in
-					Consulting and have completed management degrees from HEC Paris and WHU. Nice to meet you!
-				</h2>
+				<h1>Contact me!</h1>
+				<h2>
+				<table border="0">
+					<tr>
+						<td><i class="fa-solid fa-location-dot"></i> Address:</td>
+						<td> &ensp; 100 Memorial Drive, Apt. 11-20B, 02142 Cambridge, MA</a></td>
+					</tr>
+					<tr>
+					  <td><i class="fa-regular fa-envelope"></i> Email:</td>
+					  <td> &ensp; <a href="mailto:girgott@mit.edu">girgott@mit.edu</a></td>
+					</tr>
+					<tr>
+					  <td><i class="fa-sharp fa-solid fa-phone"></i> US phone:</td>
+					  <td> &ensp; (617) 251-7877</td>
+					</tr>
+					<tr>
+					  <td><i class="fa-sharp fa-solid fa-phone"></i> German phone:</td>
+					  <td> &ensp; +49 172 6840477</td>
+					</tr>
+					<tr>
+					  <td><i class="fab fa-linkedin"></i> LinkedIn:</td>
+					  <td> &ensp; <a href="https://www.linkedin.com/in/janphilippgirgott/">https://www.linkedin.com/in/janphilippgirgott/</a></td>
+					</tr>
+				  </table>
+				</h2>				  
 			</div>
 			<div class="banner-image">
 				<img src="images/jan.jpg">
 			</div>
 		</div>
-
-		<script>
-			var i = 0;
-			var txt = 'Hi, my name is Jan!';
-			var speed = 140; // Speed of typing
-			var repeat = 0;
-			var repeatLimit = 1; // Number of times to repeat the typing and deleting process
-			
-			function typeWriter() {
-			  if (i < txt.length) {
-				document.getElementById("hi").innerHTML += txt.charAt(i);
-				i++;
-				setTimeout(typeWriter, speed);
-			  } else if (repeat < repeatLimit - 1) {
-				// Once the text is fully typed, check if we need to repeat the process
-				repeat++;
-				i = 0; // Reset index for the next cycle
-				document.getElementById("hi").innerHTML = ''; // Clear the text all at once
-				setTimeout(typeWriter, 4*speed); // Wait a bit before starting to type again
-			  }
-			}
-			
-			// Self-invoking function to start the typing effect automatically
-			(function autoStartTypeWriter() {
-				typeWriter();
-			})();
-			
-			</script>
-
-		<div class="container">
-			<h2>About me</h2>
-			<div class="cards">
-				<div class="card">
-					<img src="images/cv.png">
-					<h3>Download my CV</h3>
-					<h4>Click on the button below to download my most up-to-date CV to learn more about my past experiences.</h4>
-					<a href="cv.pdf" target="cv.pdf" class="button">Download CV</a>
-				</div>
-				<div class="card">
-					<img src="images/projects.png">
-					<h3>Explore my Past Projects</h3>
-					<h4>This button will take you to my portfolio of machine learning and optimization projects.</h4>
-					<a href="https://hec.edu" target="https://hec.edu" class="button">Download CV</a>
-				</div>
-				<div class="card">
-					<img src="images/contact.jpg">
-					<h3>Reach out</h3>
-					<h4>Please feel free to shoot me a message at any time! I am available on all major social platforms, via phone, and email.</h4>
-					<a href="https://hec.edu" target="https://hec.edu" class="button">Download CV</a>
-				</div>
-			</div>			
-		</div>
 		<div class="footer">
 			<h2>Jan Philipp Girgott</h2>
 			<ul class="list-inline">
 				<li>
-					<a href="https://www.facebook.com/HECDataMinds/"><i class="fab fa-facebook"></i></a>
+					<a href="mailto:girgott@mit.edu"><i class="fa-regular fa-envelope"></i></a>
 				</li>
 				<li>
-					<a href="https://www.linkedin.com/company/hec-data-minds/"><i class="fab fa-linkedin"></i></a>
-				</li>
-				<li>
-					<a href="https://www.instagram.com/hecdataminds/"><i class="fab fa-instagram"></i></a>
+					<a href="https://www.linkedin.com/in/janphilippgirgott/"><i class="fab fa-linkedin"></i></a>
 				</li>
 			</ul>
 		</div>
