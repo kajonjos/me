@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Jan Philipp Girgott: Portfolio</title>
+		<meta name="description" content="Jan Philipp Girgott: Portfolio">
+		<meta charset="utf-8">
+		<link rel="stylesheet" href="css/style.css">
+		<script src="https://kit.fontawesome.com/48988ab7bc.js" crossorigin="anonymous"></script>
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@200;400;700&display=swap" rel="stylesheet">
+		</head>
+
+	<body>
+		<nav>
+			<div class="nav-content">
+			  <div class="logo">
+				<a href="#">Jan Philipp Girgott</a>
+			  </div>
+			  <ul class="nav-links">
+				<li><a href="index.html">Home</a></li>
+				<li><a href="docs/cv.pdf">CV</a></li>
+				<li><a href="portfolio.html">Portfolio</a></li>
+				<li><a href="contact.html">Contact</a></li>
+			  </ul>
+			</div>
+		  </nav>
+		
+		<script>
+		let nav = document.querySelector("nav");
+			window.onscroll = function() {
+			if(document.documentElement.scrollTop > 20){
+				nav.classList.add("sticky");
+			}else {
+				nav.classList.remove("sticky");
+			}
+			}
+		</script>
+		
+		<div class="banner">
+			<div class="banner-text">
+				<h1>Portfolio</h1>
+				<h2>On this page, you can find a selection of my past machine learning and optimization projects.</h2>
+			</div>
+		</div>
+
+		<div class="container">
+			<div class="project_containers">
+				<div class="project_container">
+					<img src="images/leuven.jpg" class="project_container_image">
+					<div class="project_content_container">
+						<h3>Finding Optimal Locations of Mobility Hubs in Leuven, Belgium</h3>
+						<h4>Optimized locations of mobility hubs for public transport/shared mobility in Leuven, Belgium with a multi-objective network flow model in 
+							Python, saving CO2 emissions of 6,300 cars daily (-12% CO2)</h4>
+						<h4><b>Context: </b>15.572 Analytics Lab at MIT</h4>
+						<h4><b>Team members: </b>Giorgio Demarchi, Srikaran Boya, Matea Gjika</h4>
+						<a href="docs/alab_presentation.pdf" target="docs/alab_presentation.pdf" class="project_button"> <i class="fa-sharp fa-regular fa-file-powerpoint"></i> Presentation</a>
+						<a href="docs/alab_report.pdf" target="docs/alab_report.pdf" class="project_button"> <i class="fa-sharp fa-regular fa-file-pdf"></i> Project Report</a>
+						<a href="docs/alab_code.ipynb" target="docs/alab_code.ipynb" class="project_button"> <i class="fa-sharp fa-solid fa-code"></i> Code</a>
+					</div>
+				</div>
+				<div class="project_container">
+					<img src="images/hodl.jpg" class="project_container_image">
+					<div class="project_content_container">
+						<h3>Creating an LLM-based Chatbot to Answer Questions About Our Deep-Learning Class</h3>
+						<h4>Built a GPT 3.5-turbo-based chatbot in Python using Retrieval Augmented Generation (RAG) with semantic chunking and a Gradio user interface</h4>
+						<h4><b>Context: </b>15.773 Hands-on Deep Learning at MIT</h4>
+						<h4><b>Team members: </b>Valentin Pinon, Sara Pasquino</h4>
+						<a href="docs/hodl_presentation.pdf" target="docs/hodl_presentation.pdf" class="project_button"> <i class="fa-sharp fa-regular fa-file-powerpoint"></i> Presentation</a>
+						<a href="docs/hodl_report.pdf" target="docs/hodl_report.pdf" class="project_button"> <i class="fa-sharp fa-regular fa-file-pdf"></i> Project Report</a>
+						<a href="https://colab.research.google.com/drive/1ydfntyYo-BdlCNAS-9VWjdKfbu9-4gZP?usp=sharing" target="https://colab.research.google.com/drive/1ydfntyYo-BdlCNAS-9VWjdKfbu9-4gZP?usp=sharing" class="project_button"> <i class="fa-sharp fa-solid fa-code"></i> Code</a>
+					</div>
+				</div>
+			</div>
+			<div class="project_containers">
+				<div class="project_container">
+					<img src="images/opti.png" class="project_container_image">
+					<div class="project_content_container">
+						<h3>Robust Multi-Period Portfolio Optimization</h3>
+						<h4>Investors optimize their portfolios over multiple periods depending on the predicted returns. 
+							In our project, we created an optimal portfolio consisting of the top 500 NASDAQ stocks (ranked by market capitalization)</h4>
+						<h4><b>Context: </b>15.093/6.7201 Optimization Methods at MIT</h4>
+						<h4><b>Team members: </b>Dido Stoikou</h4>
+						<a href="docs/opti_presentation.pdf" target="docs/opti_presentation.pdf" class="project_button"> <i class="fa-sharp fa-regular fa-file-powerpoint"></i> Presentation</a>
+						<a href="docs/opti_report.pdf" target="docs/opti_report.pdf" class="project_button"> <i class="fa-sharp fa-regular fa-file-pdf"></i> Project Report</a>
+						<a href="https://github.com/janphilipp-girgott/optimization_project" target="https://github.com/janphilipp-girgott/optimization_project" class="project_button"> <i class="fa-sharp fa-solid fa-code"></i> Code</a>
+					</div>
+				</div>
+				<div class="project_container">
+					<img src="images/ml.jpg" class="project_container_image">
+					<div class="project_content_container">
+						<h3>Classifying Loan Applications and Optimizing Interest Rates</h3>
+						<h4>In this project, we classified loan applications according to their probability of default (binary classification) and developed an optimization approach
+						to set interest rates for the accepted applications</h4>
+						<h4><b>Context: </b>15.095 Machine Learning Under a Modern Optimization Lens at MIT</h4>
+						<h4><b>Team members: </b>Valentin Pinon</h4>
+						<a href="docs/ml_presentation.pdf" target="docs/ml_presentation.pdf" class="project_button"> <i class="fa-sharp fa-regular fa-file-powerpoint"></i> Presentation</a>
+						<a href="docs/ml_report.pdf" target="docs/ml_report.pdf" class="project_button"> <i class="fa-sharp fa-regular fa-file-pdf"></i> Project Report</a>
+						<a href="https://github.com/janphilipp-girgott/ml_loan_applications" target="https://github.com/janphilipp-girgott/ml_loan_applications" class="project_button"> <i class="fa-sharp fa-solid fa-code"></i> Code</a>
+					</div>
+				</div>
+			</div>					
+		</div>
+		
+		<div class="footer">
+			<h2>Jan Philipp Girgott</h2>
+			<ul class="list-inline">
+				<li>
+					<a href="https://www.facebook.com/HECDataMinds/"><i class="fab fa-facebook"></i></a>
+				</li>
+				<li>
+					<a href="https://www.linkedin.com/company/hec-data-minds/"><i class="fab fa-linkedin"></i></a>
+				</li>
+				<li>
+					<a href="https://www.instagram.com/hecdataminds/"><i class="fab fa-instagram"></i></a>
+				</li>
+			</ul>
+		</div>
+	</body>
+</html>

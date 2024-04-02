@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>HEC DataMinds</title>
+		<meta name="description" content="Jan Philipp Girgott: Home">
+		<meta charset="utf-8">
+		<link rel="stylesheet" href="css/style.css">
+		<script src="https://kit.fontawesome.com/48988ab7bc.js" crossorigin="anonymous"></script>
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@200;400;700&display=swap" rel="stylesheet">
+		</head>
+
+	<body>
+		<nav>
+			<div class="nav-content">
+			  <div class="logo">
+				<a href="#">Jan Philipp Girgott</a>
+			  </div>
+			  <ul class="nav-links">
+				<li><a href="#">Home</a></li>
+				<li><a href="cv.pdf">CV</a></li>
+				<li><a href="portfolio.html">Portfolio</a></li>
+				<li><a href="contact.html">Contact</a></li>
+			  </ul>
+			</div>
+		  </nav>
+		
+		<script>
+		let nav = document.querySelector("nav");
+			window.onscroll = function() {
+			if(document.documentElement.scrollTop > 20){
+				nav.classList.add("sticky");
+			}else {
+				nav.classList.remove("sticky");
+			}
+			}
+		</script>
+		
+		<div class="banner">
+			<div class="banner-text">
+				<h1 id="hi"></h1>
+				<h2>I am an aspiring Data Scientist, currently completing his Master of Business Analytics at MIT Sloan. I have a background in
+					Consulting and have completed management degrees from HEC Paris and WHU. Nice to meet you!
+				</h2>
+			</div>
+			<div class="banner-image">
+				<img src="images/jan.jpg">
+			</div>
+		</div>
+
+		<script>
+			var i = 0;
+			var txt = 'Hi, my name is Jan!';
+			var speed = 140; // Speed of typing
+			var repeat = 0;
+			var repeatLimit = 1; // Number of times to repeat the typing and deleting process
+			
+			function typeWriter() {
+			  if (i < txt.length) {
+				document.getElementById("hi").innerHTML += txt.charAt(i);
+				i++;
+				setTimeout(typeWriter, speed);
+			  } else if (repeat < repeatLimit - 1) {
+				// Once the text is fully typed, check if we need to repeat the process
+				repeat++;
+				i = 0; // Reset index for the next cycle
+				document.getElementById("hi").innerHTML = ''; // Clear the text all at once
+				setTimeout(typeWriter, 4*speed); // Wait a bit before starting to type again
+			  }
+			}
+			
+			// Self-invoking function to start the typing effect automatically
+			(function autoStartTypeWriter() {
+				typeWriter();
+			})();
+			
+			</script>
+
+		<div class="container">
+			<h2>About me</h2>
+			<div class="cards">
+				<div class="card">
+					<img src="images/cv.png">
+					<h3>Download my CV</h3>
+					<h4>Click on the button below to download my most up-to-date CV to learn more about my past experiences.</h4>
+					<a href="cv.pdf" target="cv.pdf" class="button">Download CV</a>
+				</div>
+				<div class="card">
+					<img src="images/projects.png">
+					<h3>Explore my Past Projects</h3>
+					<h4>This button will take you to my portfolio of machine learning and optimization projects.</h4>
+					<a href="https://hec.edu" target="https://hec.edu" class="button">Download CV</a>
+				</div>
+				<div class="card">
+					<img src="images/contact.jpg">
+					<h3>Reach out</h3>
+					<h4>Please feel free to shoot me a message at any time! I am available on all major social platforms, via phone, and email.</h4>
+					<a href="https://hec.edu" target="https://hec.edu" class="button">Download CV</a>
+				</div>
+			</div>			
+		</div>
+		<div class="footer">
+			<h2>Jan Philipp Girgott</h2>
+			<ul class="list-inline">
+				<li>
+					<a href="https://www.facebook.com/HECDataMinds/"><i class="fab fa-facebook"></i></a>
+				</li>
+				<li>
+					<a href="https://www.linkedin.com/company/hec-data-minds/"><i class="fab fa-linkedin"></i></a>
+				</li>
+				<li>
+					<a href="https://www.instagram.com/hecdataminds/"><i class="fab fa-instagram"></i></a>
+				</li>
+			</ul>
+		</div>
+	</body>
+</html>

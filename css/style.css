@@ -4,13 +4,14 @@
 @import url("components/banner.css");
 @import url("components/card.css");
 @import url("components/button.css");
-@import url("components/header-logo.css");
 @import url("components/footer.css");
+@import url("components/nav.css");
+@import url("components/project_container.css");
 
 body {
-background-color: #F2F6F5;
+background-color: #f0f0f0;
 font-family: 'Raleway', sans-serif;
-color: #63707E;
+color: black;
 font-size: 17px;
 text-decoration: none;
 }
@@ -21,12 +22,11 @@ h1, h2, h3 {
 }
 
 a {
-  color: #3A8891;
+  color: black;
   text-decoration: none;
   transition: 0.5s ease;
 }
 
 a:hover {
-  text-decoration: none;
-  color: #93B5B3;
+  text-decoration-line: underline;
 }
