@@ -9,3 +9,9 @@
     font-size: 17px;
     margin-bottom: 10px;
 }
+
+.button_container{
+    display: flex;
+    justify-content: left;
+    flex-wrap: wrap ;
+}
