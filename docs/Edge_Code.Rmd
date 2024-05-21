@@ -1,0 +1,645 @@
+---
+title: "Edge_project_Final"
+output:
+  pdf_document: default
+  html_document: default
+date: "2023-11-24"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Preprocess Data
+```{r, warning=FALSE, message=FALSE}
+library(readr)
+library(dplyr)
+library(caret)
+library(pROC)
+library(rpart)
+library(randomForest)
+library(xgboost)
+```
+
+```{r, warning=FALSE, message=FALSE}
+# Import the dataset
+data <- read_csv("final.table.csv")
+
+data$year <- as.factor(data$year)
+data$month <- as.factor(data$month)
+data$dominant_topic <- as.factor(data$dominant_topic)
+data$OneHundred.Million <- data$`100.Million`
+data$`100.Million` <- NULL
+
+# Remove rows with na
+data <- na.omit(data) 
+
+# Create subsets for EDM and R&B music
+edm <- data %>%
+  filter(playlist_genre == "edm")
+rb <- data %>%
+  filter(playlist_genre == "r&b")
+
+# Remove columns
+cols_remove <- c("track_name", "track_artist", "lyrics", "track_album_release_date",
+                 "playlist_genre", "language", "year")
+edm <- edm[, !(colnames(edm) %in% cols_remove)]
+rb <- rb[, !(colnames(rb) %in% cols_remove)]
+```
+
+```{r, warning=FALSE, message=FALSE}
+# Define track popularity as above third quartile
+third_quartile_edm <- quantile(edm$track_popularity, 0.75)
+edm <- edm %>% 
+  mutate(Popular = ifelse(track_popularity > third_quartile_edm, 1, 0)) %>%
+  select(-track_popularity)
+edm$Popular <- as.factor(edm$Popular)
+
+third_quartile_rb <- quantile(rb$track_popularity, 0.75)
+rb <- rb %>% 
+  mutate(Popular = ifelse(track_popularity > third_quartile_rb, 1, 0)) %>%
+  select(-track_popularity)
+rb$Popular <- as.factor(rb$Popular)
+```
+
+```{r}
+# One-hot encode the data
+cols_categorical <- c("month", "day_of_week", 
+                      "dominant_topic", "SentimentClass_Bing", "SentimentClass_nrc")
+
+encoded_edm <- model.matrix(~ . + 0, data = data.frame(edm[, cols_categorical]))
+encoded_rb <- model.matrix(~ . + 0, data = data.frame(rb[, cols_categorical]))
+
+# Combine with the original data frame
+edm_onehot <- cbind(edm, encoded_edm)
+rb_onehot <- cbind(rb, encoded_rb)
+
+# Remove the original categorical columns
+edm_onehot <- edm_onehot[, !names(edm_onehot) %in% cols_categorical]
+rb_onehot <- rb_onehot[, !names(rb_onehot) %in% cols_categorical]
+```
+
+```{r}
+# Create dataframe for results
+results_edm <- data.frame(
+  Model = character(),
+  Baseline_Accuracy = numeric(),
+  Model_Accuracy = numeric(),
+  AUC_Value = numeric()
+)
+
+results_rb <- data.frame(
+  Model = character(),
+  Baseline_Accuracy = numeric(),
+  Model_Accuracy = numeric(),
+  AUC_Value = numeric()
+)
+```
+
+
+# Logistic Regression
+
+### EDM
+
+Identify significant columns
+```{r}
+# Fit logistic regression model
+logistic_model <- glm(Popular ~ . - speechiness - One.Billion - key - instrumentalness
+                      - mode - SentimentClass_nrc, data = edm, family = "binomial")
+
+# Display summary to see p-values
+summary(logistic_model)
+```
+
+```{r}
+# Split the data into training and testing sets
+set.seed(123)  # for reproducibility
+train_indices <- createDataPartition(edm$Popular, p = 0.7, list = FALSE)
+train_data <- edm[train_indices, ]
+test_data <- edm[-train_indices, ]
+
+# Fit logistic regression model
+logistic_model <- glm(Popular ~ . - speechiness - One.Billion - key - instrumentalness
+                      - mode, data = train_data, family = "binomial")
+
+predictions <- predict(logistic_model, newdata = test_data, type = "response")
+
+# Make predictions on the test set
+predictions <- predict(logistic_model, newdata = test_data, type = "response")
+
+# Convert 'popular' to a binary factor for model evaluation
+test_data$Popular <- as.factor(test_data$Popular)
+
+# Calculate baseline
+baseline <- (table(train_data$Popular)[1]) / (table(train_data$Popular)[1] + table(train_data$Popular)[2])
+
+# Calculate accuracy
+predicted_class <- factor(ifelse(predictions > 0.5, "1", "0"), levels = levels(test_data$Popular))
+confusion_matrix <- confusionMatrix(predicted_class, test_data$Popular)
+accuracy <- confusion_matrix$overall["Accuracy"]
+
+# Calculate AUC
+roc_curve <- roc(test_data$Popular, predictions)
+auc <- as.numeric(auc(roc_curve))
+
+results_edm <<- rbind(results_edm, data.frame(
+    Model = "Logistic Regression",
+    AUC_Value = round(auc, 4),
+    Baseline_Accuracy = round(baseline, 4),
+    Model_Accuracy = round(accuracy, 4)
+  ))
+
+# Print results
+cat("Baseline:", round(baseline, 4), "\n")
+cat("Accuracy:", round(accuracy, 4), "\n")
+cat("AUC:", round(auc, 4), "\n")
+
+```
+
+### R&B
+
+Identify significant columns
+```{r}
+# Fit logistic regression model
+logistic_model <- glm(Popular ~ . - speechiness - energy - SentimentClass_nrc
+                      - valence - dominant_topic - key - instrumentalness - tempo, data = rb, family = "binomial")
+
+# Display summary to see p-values
+summary(logistic_model)
+```
+
+Run Logistic Regression
+```{r}
+# Split the data into training and testing sets
+set.seed(123)  # for reproducibility
+train_indices <- createDataPartition(rb$Popular, p = 0.7, list = FALSE)
+train_data <- rb[train_indices, ]
+test_data <- rb[-train_indices, ]
+
+# Fit logistic regression model
+logistic_model <- glm(Popular ~ . - speechiness - energy - SentimentClass_nrc
+                      - valence - dominant_topic - key - instrumentalness - tempo
+                      - OneHundred.Million , data = train_data, family = "binomial")
+# NOTE: Accuracy is best (0.8134) when no - tempo and - 100.Million
+
+predictions <- predict(logistic_model, newdata = test_data, type = "response")
+
+# Make predictions on the test set
+predictions <- predict(logistic_model, newdata = test_data, type = "response")
+
+# Convert 'popular' to a binary factor for model evaluation
+test_data$Popular <- as.factor(test_data$Popular)
+
+# Calculate baseline
+baseline <- (table(train_data$Popular)[1]) / (table(train_data$Popular)[1] + table(train_data$Popular)[2])
+
+# Calculate accuracy
+predicted_class <- factor(ifelse(predictions > 0.5, "1", "0"), levels = levels(test_data$Popular))
+confusion_matrix <- confusionMatrix(predicted_class, test_data$Popular)
+accuracy <- confusion_matrix$overall["Accuracy"]
+
+# Calculate AUC
+roc_curve <- roc(test_data$Popular, predictions)
+auc <- as.numeric(auc(roc_curve))
+
+results_rb <<- rbind(results_rb, data.frame(
+    Model = "Logistic Regression",
+    AUC_Value = round(auc, 4),
+    Baseline_Accuracy = round(baseline, 4),
+    Model_Accuracy = round(accuracy, 4)
+  ))
+
+# Print results
+cat("Baseline:", round(baseline, 4), "\n")
+cat("Accuracy:", round(accuracy, 4), "\n")
+cat("AUC:", round(auc, 4), "\n")
+
+```
+
+# CART
+
+### EDM
+
+Find significant columns
+```{r}
+# Split the data into training and testing sets
+set.seed(123)  # for reproducibility
+train_indices <- createDataPartition(edm$Popular, p = 0.7, list = FALSE)
+train_data <- edm[train_indices, ]
+test_data <- edm[-train_indices, ]
+
+# Fit CART model
+cart_model <- rpart(
+  Popular ~ . - speechiness,
+  data = train_data,
+  method = "class",
+  control = rpart.control(
+    cp = 0.01,
+    minsplit = 10,
+    minbucket = 5,
+    maxdepth = 5
+  )
+)
+
+# Make predictions on the test set
+predictions <- predict(cart_model, newdata = test_data, type = "class")
+
+# Convert 'Popular' to a binary factor for model evaluation
+test_data$Popular <- as.factor(test_data$Popular)
+
+# Calculate baseline
+table <- table(train_data$Popular)[1] + table(train_data$Popular)[2]
+baseline <- (table(train_data$Popular)[1]) / (table(train_data$Popular)[1] + table(train_data$Popular)[2])
+
+# Calculate accuracy
+confusion_matrix <- confusionMatrix(predictions, test_data$Popular)
+accuracy <- confusion_matrix$overall["Accuracy"]
+
+# Calculate AUC
+roc_curve <- roc(test_data$Popular, as.numeric(predictions))
+auc <- as.numeric(auc(roc_curve))
+
+# Return a data frame with the results
+results_edm <<- rbind(results_edm, data.frame(
+    Model = "CART",
+    AUC_Value = round(auc, 4),
+    Baseline_Accuracy = round(baseline, 4),
+    Model_Accuracy = round(accuracy, 4)
+  ))
+
+
+# Print results
+cat("Baseline:", round(baseline, 4), "\n")
+cat("Accuracy:", round(accuracy, 4), "\n")
+cat("AUC:", round(auc, 4), "\n")
+
+```
+
+Build model
+```{r}
+# Fit a CART model
+cart_model <- rpart(
+  Popular ~ . - speechiness,
+  data = train_data,
+  method = "class",
+  control = rpart.control(
+    cp = 0.01,
+    minsplit = 10,
+    minbucket = 5,
+    maxdepth = 5
+  )
+)
+
+# Display the tree
+print(cart_model)
+
+var_importance <- varImp(cart_model)
+
+print(var_importance)
+
+# Plot the tree
+library(rpart.plot)
+prp(cart_model, digits=3, split.font=1, varlen = 0, faclen = 0)
+```
+
+### R&B
+
+Build model
+```{r}
+# Split the data into training and testing sets
+set.seed(123)  # for reproducibility
+train_indices <- createDataPartition(rb$Popular, p = 0.7, list = FALSE)
+train_data <- rb[train_indices, ]
+test_data <- rb[-train_indices, ]
+
+# Fit CART model
+cart_model <- rpart(Popular ~ . - speechiness - energy - danceability
+                    -loudness, data = train_data, method = "class")
+
+# Make predictions on the test set
+predictions <- predict(cart_model, newdata = test_data, type = "class")
+
+# Convert 'Popular' to a binary factor for model evaluation
+test_data$Popular <- as.factor(test_data$Popular)
+
+# Calculate baseline
+table <- table(train_data$Popular)[1] + table(train_data$Popular)[2]
+baseline <- (table(train_data$Popular)[1]) / (table(train_data$Popular)[1] + table(train_data$Popular)[2])
+
+# Calculate accuracy
+confusion_matrix <- confusionMatrix(predictions, test_data$Popular)
+accuracy <- confusion_matrix$overall["Accuracy"]
+
+# Calculate AUC
+roc_curve <- roc(test_data$Popular, as.numeric(predictions))
+auc <- as.numeric(auc(roc_curve))
+
+# Return a data frame with the results
+results_rb <<- rbind(results_rb, data.frame(
+    Model = "CART",
+    AUC_Value = round(auc, 4),
+    Baseline_Accuracy = round(baseline, 4),
+    Model_Accuracy = round(accuracy, 4)
+  ))
+
+# Print results
+cat("Baseline:", round(baseline, 4), "\n")
+cat("Accuracy:", round(accuracy, 4), "\n")
+cat("AUC:", round(auc, 4), "\n")
+
+```
+
+Find significant columns
+```{r}
+# Fit a CART model
+cart_model <- rpart(Popular ~ . - speechiness - energy - danceability -loudness, data = rb, method = "class")
+
+# Display the tree
+print(cart_model)
+
+# Plot the tree
+library(rpart.plot)
+prp(cart_model, digits=3, split.font=1, varlen = 0, faclen = 0)
+```
+
+
+# Random Forest
+
+### EDM
+```{r}
+# Set seed for reproducibility
+set.seed(123)
+
+# Split the data into training and testing sets
+train_indices <- createDataPartition(edm$Popular, p = 0.7, list = FALSE)
+train_data <- edm[train_indices, ]
+test_data <- edm[-train_indices, ]
+
+# Fit Random Forest model
+rf_model <- randomForest(Popular ~ ., data = train_data)
+
+# Make predictions on the test set
+predictions <- predict(rf_model, newdata = test_data)
+
+# Convert 'Popular' to a binary factor for model evaluation
+test_data$Popular <- as.factor(test_data$Popular)
+
+# Calculate baseline
+table <- table(train_data$Popular)[1] + table(train_data$Popular)[2]
+baseline <- (table(train_data$Popular)[1]) / (table(train_data$Popular)[1] + table(train_data$Popular)[2])
+
+# Calculate accuracy
+confusion_matrix <- confusionMatrix(predictions, test_data$Popular)
+accuracy <- confusion_matrix$overall["Accuracy"]
+
+# Calculate AUC
+roc_curve <- roc(test_data$Popular, as.numeric(predictions))
+auc <- as.numeric(auc(roc_curve))
+
+# Return a data frame with the results
+results_edm <- rbind(results_edm, data.frame(
+    Model = "Random Forest",
+    AUC_Value = round(auc, 4),
+    Baseline_Accuracy = round(baseline, 4),
+    Model_Accuracy = round(accuracy, 4)
+  ))
+
+# Print results
+cat("Baseline:", round(baseline, 4), "\n")
+cat("Accuracy:", round(accuracy, 4), "\n")
+cat("AUC:", round(auc, 4), "\n")
+
+```
+
+### R&B
+
+```{r}
+# Set seed for reproducibility
+set.seed(123)
+
+# Split the data into training and testing sets
+train_indices <- createDataPartition(rb$Popular, p = 0.7, list = FALSE)
+train_data <- rb[train_indices, ]
+test_data <- rb[-train_indices, ]
+
+# Fit Random Forest model
+rf_model <- randomForest(Popular ~ . - energy - Feats - Tracks, data = train_data)
+
+# Make predictions on the test set
+predictions <- predict(rf_model, newdata = test_data)
+
+# Convert 'Popular' to a binary factor for model evaluation
+test_data$Popular <- as.factor(test_data$Popular)
+
+# Calculate baseline
+table <- table(train_data$Popular)[1] + table(train_data$Popular)[2]
+baseline <- (table(train_data$Popular)[1]) / (table(train_data$Popular)[1] + table(train_data$Popular)[2])
+
+# Calculate accuracy
+confusion_matrix <- confusionMatrix(predictions, test_data$Popular)
+accuracy <- confusion_matrix$overall["Accuracy"]
+
+# Calculate AUC
+roc_curve <- roc(test_data$Popular, as.numeric(predictions))
+auc <- as.numeric(auc(roc_curve))
+
+# Return a data frame with the results
+results_rb <- rbind(results_rb, data.frame(
+    Model = "Random Forest",
+    AUC_Value = round(auc, 4),
+    Baseline_Accuracy = round(baseline, 4),
+    Model_Accuracy = round(accuracy, 4)
+  ))
+
+# Print results
+cat("Baseline:", round(baseline, 4), "\n")
+cat("Accuracy:", round(accuracy, 4), "\n")
+cat("AUC:", round(auc, 4), "\n")
+```
+
+```{r}
+# Extract feature importance from the trained Random Forest model
+importance <- importance(rf_model)
+
+importance
+colnames(train_data)
+
+```
+
+# XGBoost
+
+### EDM
+```{r}
+set.seed(123)
+
+# Split the data into training and testing sets
+train_indices <- createDataPartition(edm$Popular, p = 0.7, list = FALSE)
+train_data <- edm[train_indices, ]
+test_data <- edm[-train_indices, ]
+
+X.train = train_data%>%select(-Popular) #fix
+X.test = test_data%>%select(-Popular)
+y.train = train_data$Popular
+y.test = test_data%>%select(Popular)
+X.train <- model.matrix(~.-1,data = X.train)
+X.test <- model.matrix(~.-1,data = X.test)
+
+hyper_grid <- expand.grid(
+  nrounds = c(50,  150),
+  eta = c(0.01, 0.1),
+  max_depth = c(3, 9),
+  subsample = c(0.5,  1),
+  colsample_bytree = c(0.5,  1),
+  gamma = c(0, 0.1, 1, 5),
+  min_child_weight = c(1, 2, 10)
+)
+
+train_control <- trainControl(method = "cv", number = 10, summaryFunction = twoClassSummary, classProbs = TRUE)
+
+suppressWarnings({
+xgb_mod <- train(
+  x = X.train, y = factor(y.train, levels = c("0", "1"), labels = c("Class0", "Class1")),
+  method = "xgbTree",
+  trControl = train_control,
+  tuneGrid = hyper_grid,
+  metric = "LogLoss", verbose = FALSE
+)})
+
+test_predict_xgb = predict(xgb_mod, X.test)
+prediction <- ifelse(test_predict_xgb == "Class0", 0, 1)
+levels(prediction) <- levels(test_data$Popular)
+prediction <- as.factor(prediction)
+
+# Calculate baseline
+table <- table(train_data$Popular)[1] + table(train_data$Popular)[2]
+baseline <- (table(train_data$Popular)[1]) / (table(train_data$Popular)[1] + table(train_data$Popular)[2])
+
+# Calculate accuracy
+confusion_matrix <- confusionMatrix(prediction, test_data$Popular)
+accuracy <- confusion_matrix$overall["Accuracy"]
+
+# Calculate AUC
+roc_curve <- roc(test_data$Popular, as.numeric(test_predict_xgb))
+auc <- as.numeric(auc(roc_curve))
+
+results_edm <- rbind(results_edm, data.frame(
+  Model = "XGBoost",
+  AUC_Value = round(auc, 4),
+  Baseline_Accuracy = round(baseline, 4),
+  Model_Accuracy = round(accuracy, 4)
+))
+
+# Print results
+cat("Baseline:", round(baseline, 4), "\n")
+cat("Accuracy:", round(accuracy, 4), "\n")
+cat("AUC:", round(auc, 4), "\n")
+```
+
+### R&B
+
+```{r}
+set.seed(123)
+
+# Split the data into training and testing sets
+train_indices <- createDataPartition(rb$Popular, p = 0.7, list = FALSE)
+train_data <- rb[train_indices, ]
+test_data <- rb[-train_indices, ]
+
+X.train = train_data%>%select(-Popular) #fix
+X.test = test_data%>%select(-Popular)
+y.train = train_data$Popular
+y.test = test_data%>%select(Popular)
+X.train <- model.matrix(~.-1,data = X.train)
+X.test <- model.matrix(~.-1,data = X.test)
+
+hyper_grid <- expand.grid(
+  nrounds = c(50,  150),
+  eta = c(0.01, 0.1),
+  max_depth = c(3, 9),
+  subsample = c(0.5,  1),
+  colsample_bytree = c(0.5,  1),
+  gamma = c(0, 0.1, 1, 5),
+  min_child_weight = c(1, 2, 10)
+)
+
+train_control <- trainControl(method = "cv", number = 10, summaryFunction = twoClassSummary, classProbs = TRUE)
+
+suppressWarnings({
+xgb_mod <- train(
+  x = X.train, y = factor(y.train, levels = c("0", "1"), labels = c("Class0", "Class1")),
+  method = "xgbTree",
+  trControl = train_control,
+  tuneGrid = hyper_grid,
+  metric = "LogLoss", verbose = FALSE
+)})
+
+test_predict_xgb = predict(xgb_mod, X.test)
+prediction <- ifelse(test_predict_xgb == "Class0", 0, 1)
+levels(prediction) <- levels(test_data$Popular)
+prediction <- as.factor(prediction)
+
+# Calculate baseline
+table <- table(train_data$Popular)[1] + table(train_data$Popular)[2]
+baseline <- (table(train_data$Popular)[1]) / (table(train_data$Popular)[1] + table(train_data$Popular)[2])
+
+# Calculate accuracy
+confusion_matrix <- confusionMatrix(prediction, test_data$Popular)
+accuracy <- confusion_matrix$overall["Accuracy"]
+
+# Calculate AUC
+roc_curve <- roc(test_data$Popular, as.numeric(test_predict_xgb))
+auc <- as.numeric(auc(roc_curve))
+
+results_rb <- rbind(results_rb, data.frame(
+  Model = "XGBoost",
+  AUC_Value = round(auc, 4),
+  Baseline_Accuracy = round(baseline, 4),
+  Model_Accuracy = round(accuracy, 4)
+))
+
+# Print results
+cat("Baseline:", round(baseline, 4), "\n")
+cat("Accuracy:", round(accuracy, 4), "\n")
+cat("AUC:", round(auc, 4), "\n")
+```
+
+# Lasso and Ridge
+```{r}
+# Split the data into training and testing sets
+set.seed(123)  # for reproducibility
+train_indices <- createDataPartition(edm$Popular, p = 0.7, list = FALSE)
+train_data <- edm[train_indices, ]
+test_data <- edm[-train_indices, ]
+
+# Fit logistic regression model with Lasso regularization
+lasso_model <- cv.glmnet(
+  x = model.matrix(Popular ~ . - speechiness - One.Billion - key - instrumentalness - mode, data = train_data),
+  y = as.factor(train_data$Popular),
+  family = "binomial",
+  alpha = 0  # Set alpha to 1 for Lasso regularization
+)
+
+# Make predictions on the test set
+predictions <- predict(lasso_model, newx = model.matrix(Popular ~ . - speechiness - One.Billion - key - instrumentalness - mode, data = test_data), s = "lambda.min", type = "response")
+
+# Convert 'popular' to a binary factor for model evaluation
+test_data$Popular <- as.factor(test_data$Popular)
+
+# Calculate baseline
+baseline <- (table(train_data$Popular)[1]) / sum(table(train_data$Popular))
+
+# Calculate accuracy
+predicted_class <- factor(ifelse(predictions > 0.5, "1", "0"), levels = levels(test_data$Popular))
+confusion_matrix <- confusionMatrix(predicted_class, test_data$Popular)
+accuracy <- confusion_matrix$overall["Accuracy"]
+
+# Calculate AUC
+roc_curve <- roc(test_data$Popular, predictions)
+auc <- as.numeric(auc(roc_curve))
+
+# Print results
+cat("Baseline:", round(baseline, 4), "\n")
+cat("Accuracy:", round(accuracy, 4), "\n")
+cat("AUC:", round(auc, 4), "\n")
+```
+
